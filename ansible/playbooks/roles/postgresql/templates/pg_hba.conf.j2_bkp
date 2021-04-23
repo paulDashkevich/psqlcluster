@@ -1,0 +1,5 @@
+# MD5 hashed password hosts
+{% for host in postgresql_pg_hba_md5_hosts %}
+host  all  all  {{host}}  md5
+{% endfor %}
+

@@ -1,0 +1,36 @@
+---
+- name: Download and Extract NC
+  unarchive:
+        src: https://download.nextcloud.com/server/releases/latest.tar.bz2
+        dest: /var/www/
+        remote_src: yes
+
+- name: Create and owner ship www-data clvm
+  file:
+        path: /mnt/gfs2/nextcloud
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+        mode: '770'
+
+- name: Ownership www-data dir
+  file:
+        path: /var/www/nextcloud
+        state: directory
+        recurse: no
+        owner: www-data
+        group: www-data
+        mode: '770'
+
+
+- name: Owner ship files nextcloud
+  file:
+        path: "{{ item }}"
+        recurse: yes
+        owner: www-data
+        group: www-data
+        mode: '770'
+  with_items:
+          - /mnt/gfs2/nextcloud
+          - /var/www/nextcloud

@@ -1,0 +1,30 @@
+{
+     "advertise_addr": "{{ ansible_eth2.ipv4.address }}",
+     "bind_addr": "{{ ansible_eth2.ipv4.address }}",
+     "bootstrap_expect": 1,
+     "client_addr": "0.0.0.0",
+     "datacenter": "DC1",
+     "data_dir": "{{ consul_data_path }}",
+     "domain": "consul.local",
+     "enable_local_script_checks": true,
+     "enable_script_checks": true,
+     "enable_syslog": true,
+     "encrypt": "zS0eLkIsQkx3vFfmktA8KeIk/pTcVqeYpBOe1IS0g8c=",
+     "leave_on_terminate": true,
+     "rejoin_after_leave": true,
+     "retry_join": [
+         "iscsi",
+         "pg_0",
+         "pg_1"
+    ],
+     "server": true,
+     "start_join": [
+         "iscsi",
+         "pg_0",
+         "pg_1"
+    ],
+     "log_file": "/etc/consul.d/log/consul.log",
+     "log_level": "DEBUG",
+     "log_rotate_duration": "24h"
+}
+

@@ -1,0 +1,69 @@
+- name: Add repository
+  yum_repository:
+    name: epel-release
+    description: PostgreSQL YUM repo
+    file: external_repos
+    baseurl: https://download.postgresql.org/pub/repos/yum/12/redhat/rhel-7-x86_64
+    gpgkey: https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-12
+    gpgcheck: yes
+    enabled: yes
+    state: present
+
+- name: Ensure PostgreSQL packages are installed
+  yum:
+      name: "{{ item }}"
+  with_items:
+    - yum-utils
+    - postgresql12
+    - postgresql12-server
+    - postgresql12-contrib
+
+- name: Ensure PostgreSQL Python libraries are installed
+  yum:
+    name: ["python-psycopg2", "python-pycurl", "glibc-common","libselinux-python"]
+    state: present
+    update_cache: yes
+
+#- name: Ensure PostgreSQL database is initialized
+#  shell: postgresql-12-setup initdb
+#  register: remote_tmp
+
+#- name: copying config file
+#  template:
+#    src: "{{ item }}"
+#    dest: /var/lib/pgsql/12/data/{{ item }}
+#  with_items:
+#    - pg_hba.conf
+#    - postgresql.conf
+
+- name: stop postgresql
+  service:
+    name: postgresql-12
+    state: stopped
+    enabled: false
+
+#- name: Create user nextcloud
+#  postgresql_user:
+#    name: nextcloud
+#    password: "nextcloud"
+#    port: 5433
+
+#- name: Create db for wp
+#  postgresql_db:
+#    name: nextcloud
+#    owner: nextcloud
+#    port: 5433
+#    encoding: UTF-8
+#    template: template0
+#    conn_limit: "100"
+#    state: present
+#  register: remote_tmp
+
+#- name: Connect user to db
+#  postgresql_user:
+#    db: nextcloud
+#    name: nextcloud
+#    port: 5433
+#    priv: "ALL"
+#  register: remote_tmp
+

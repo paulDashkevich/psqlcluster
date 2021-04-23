@@ -1,0 +1,86 @@
+---
+
+- name: Linux | Create User
+  user:
+      name: consul
+      password: ''
+      shell: /bin/bash
+
+- name: Create consul dirs
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ consul_user }}"
+      group: "{{ consul_group }}"
+      recurse: yes
+  with_items:
+    - "{{ consul_config_path }}"
+    - "{{ consul_data_path }}"
+    - "{{ consul_log_dir }}"
+    - "{{ consul_config_path }}keys"
+
+- name: Install python-pip
+  yum:
+     name:
+       - python-pip
+       - python-setuptools
+       - python-devel
+       - python3
+       - "@development-tools"
+
+- name: Upgrade pip
+  pip:
+    name: pip
+    executable: pip3
+    state: latest
+
+- name: upd pip
+  command: python3 -m pip install --upgrade pip
+
+- name: Install bottle python package
+  shell: |
+    pip3 install  python-consul \
+                  psycopg2-binary \
+                  patroni[consul]
+
+- name: Download and extract Consul
+  unarchive:
+      src: "{{ consul_zip_url }}"
+      dest: "{{ consul_bin_path }}"
+      remote_src: yes
+
+- name: Copying config leader_server
+  template:
+      src: consul_server_leader_json.j2
+      dest: "{{ consul_conf_file_path }}"
+  when: ansible_facts['nodename'] == 'iscsi'
+
+- name: Copying config consul server
+  template:
+      src: config_server_json.j2
+      dest: "{{ consul_conf_file_path }}"
+  when: ansible_facts['nodename'] != 'iscsi'
+
+- name: Copying service consul file
+  template:
+      src: consul_server_systemd.service.j2
+      dest: "{{ consul_service_path }}"
+
+#- name: Copiyng key file
+#  copy:
+#      src: "./files/key.yaml"
+#      dest: "{{ consul_config_path }}keys/"
+#  when: ansible_facts['nodename'] == 'iscsi'
+
+- name: Enable Consul
+  service:
+      name: consul
+      state: started
+      enabled: true
+
+- pause:
+      seconds: 5
+
+#- name: Import key to consul
+#  command: consul kv import @{{ consul_config_path }}keys/key.yaml
+#  when: ansible_facts['nodename'] == 'iscsi'

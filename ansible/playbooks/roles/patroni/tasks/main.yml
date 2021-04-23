@@ -1,0 +1,39 @@
+---
+
+- name: Create patroni directories
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: postgres
+      group: postgres
+      mode: 0700
+  with_items:
+          - /etc/patroni/
+          - /var/data/base
+
+- name: Copy service patroni
+  template:
+       src: patroni.service.j2
+       dest: /etc/systemd/system/patroni.service
+
+- name: Copy patroni config file
+  template:
+      src: patroni0.yml.j2
+      dest: /etc/patroni/patroni.yml
+  with_items:
+          - patroni0.yml.j2
+          - patroni.service.j2
+
+- name: Start patroni cluster
+  systemd:
+      name: patroni
+      state: restarted
+      daemon_reload: true
+      enabled: true
+
+- name: check owner patroni dir
+  file:
+      path: /etc/patroni/
+      recurse: yes
+      owner: postgres
+      group: postgres

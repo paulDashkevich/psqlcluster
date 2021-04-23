@@ -1,0 +1,45 @@
+---
+
+- name: install pgbouncer
+  yum:
+    name: pgbouncer
+    state: latest
+
+- name: Linux | Create User
+  user:
+    name: postgres
+    password: ''
+    shell: /bin/bash
+
+
+- name: create and ownership PGBouncer dir
+  file:
+    path: /etc/pgbouncer
+    state: directory
+    owner: postgres
+    group: postgres
+
+- name: Copying configs
+  template:
+    src: "{{ item }}"
+    dest: /etc/pgbouncer/{{ item | basename | splitext | first }}
+  with_fileglob: templates/*
+
+- name: Copying systemd file
+  template:
+    src: ./tmpl/pgbouncer_systemd.service.j2
+    dest: /usr/lib/systemd/system/pgbouncer.service
+
+- name: enable service
+  service:
+    name: pgbouncer.service
+    state: started
+    enabled: yes
+
+- name: Permission set
+  shell: /usr/bin/chown -R postgres:postgres /etc/pgbouncer/
+
+- name: reload pgbouncer
+  service:
+    name: pgbouncer.service
+    state: reloaded

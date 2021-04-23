@@ -1,0 +1,39 @@
+---
+
+- name: Linux | Create User
+  user:
+      name: consul
+      password: ''
+      shell: /bin/bash
+
+- name: create and ownership Consul dir
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ consul_user }}"
+      group: "{{ consul_group }}"
+  with_items:
+   - "{{ consul_config_path }}"
+   - "{{ consul_data_path }}"
+
+- name: download and extract Consul
+  unarchive:
+      src: "{{ consul_zip_url }}"
+      dest: "{{ consul_bin_path }}"
+      remote_src: yes
+
+- name: copying config consul
+  template:
+      src: config_client_json.j2
+      dest: "{{ consul_config_path }}/config.json"
+
+- name: copying service consul file
+  template:
+      src: consul_client_systemd.service.j2
+      dest: "{{ consul_service_path }}"
+
+- name: enable Consul
+  service:
+      name: consul
+      state: started
+      enabled: true

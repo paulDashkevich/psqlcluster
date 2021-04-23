@@ -1,0 +1,43 @@
+---
+
+- name: create and ownership consul-tmpl dir
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: consul
+      group: consul
+  with_items:
+    - "{{ consul_config_path }}"
+    - "{{ consul_data_path }}"
+
+- name: download and extract Consul
+  unarchive:
+      src: "{{ consul_zip_url }}"
+      dest: "{{ consul_bin_path }}"
+      remote_src: yes
+
+- name: copying config consul-tmpl file
+  template:
+      src: consul-template.hcl.j2
+      dest: /etc/consul-template.d/consul-template.hcl
+
+- name: copying config pg_bouncer_consul-tmpl file
+  template:
+      src: pgbouncer.ctmpl.j2
+      dest: "{{ consul_tmpl_path }}"
+
+- name: copying service consul file
+  template:
+      src: consul-template.service.j2
+      dest: "{{ consul_service_path }}"
+
+- name: enable service
+  service:
+    name: consul-template.service
+    state: started
+    enabled: true
+
+- name: start pgbouncer
+  service:
+    name: pgbouncer
+    state: started

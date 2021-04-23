@@ -1,0 +1,126 @@
+- name: time sync for all hosts
+  hosts: all
+  tags: time
+  become: true
+  roles:
+   - role: ntp
+   - role: common
+   - role: dis_ipv6
+
+- name: Configure proxy-server
+  hosts: proxy
+  tags: proxy
+  become: true
+  roles:
+   - role: nginx_proxy
+
+- name: Install and config KA master
+  hosts: web0
+  tags: KAmaster
+  become: true
+  roles:
+   - role: keepalived
+     vars:
+         virtual_router_id: 51
+         name_instance: nginx
+         state_VR: MASTER
+         priority: 103
+         ip_0: 10.1.0.10
+         ip_1: 10.1.0.11
+
+- name: Install and config KA backup
+  hosts: web1
+  tags: KAbackup
+  become: true
+  roles:
+   - role: keepalived
+     vars:
+         virtual_router_id: 51
+         name_instance: nginx
+         priority: 101
+         state_VR: BACKUP
+         ip_0: 10.1.0.11
+         ip_1: 10.1.0.10
+
+- name: Configure target and initiators
+  hosts: iscsi
+  tags: target
+  become: true
+  roles:
+   - role: iscsi-target
+
+- name: install consul server
+  hosts: iscsi, pg_0, pg_1
+  become: true
+  tags: consul_server
+  ignore_errors: true
+  roles:
+   - role: consul-server
+
+- name: Configure iscsi_client
+  tags: web
+  become: true
+  hosts: web_pcm
+  become_user: root
+  roles:
+   - role: iscsi-client
+   - role: consul-client
+   - role: pg_bouncer
+   - role: consul_template
+   - role: pacemaker
+
+- name: install qdevice
+  tags: clusterdevice
+  hosts: iscsi
+  become: true
+  ignore_errors: true
+  roles:
+   - role: qdevice
+
+- name: create FS CLVM
+  tags: clusterfs
+  hosts: web0
+  become: true
+  ignore_errors: true
+  roles:
+   - role: create-cfs
+
+- name: Install and configure backends nginx
+  hosts: web_pcm
+  tags: web
+  become: true
+  become_user: root
+  ignore_errors: true
+  roles:
+   - role: nginx_web
+
+- name: install nx
+  hosts: web0
+  tags: nextcloud
+  become: true
+  ignore_errors: true
+  roles:
+   - role: tune_cluster
+
+- name: install postgreSQL
+  hosts: postgres
+  become: true
+  tags: psql
+  ignore_errors: true
+  roles:
+    - role: postgresql
+    - role: patroni
+
+- name: Create db and user
+  hosts: web0
+  become: true
+  ignore_errors: true
+  roles:
+    - role: users_db
+
+- name: Install NX
+  hosts: web_pcm
+  become: true
+  ignore_errors: true
+  roles:
+    - install_nx

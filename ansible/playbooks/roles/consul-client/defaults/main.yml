@@ -1,0 +1,12 @@
+---
+
+consul_zip_url: "https://releases.hashicorp.com/consul/1.9.4/consul_1.9.4_linux_amd64.zip"
+consul_user: consul
+consul_group: consul
+consul_version: '1.9.4'
+consul_config_path: "/etc/consul.d/"
+consul_bin_path: "/usr/bin/"
+consul_data_path: "/var/consul"
+consul_run_path: "/run/consul/"
+consul_join: []
+consul_service_path: "/etc/systemd/system/consul.service"

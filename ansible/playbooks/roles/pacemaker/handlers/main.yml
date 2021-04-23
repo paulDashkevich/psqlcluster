@@ -1,0 +1,35 @@
+---
+
+- name: restart corosync
+  service:
+    name: corosync
+    state: restarted
+  become: true
+
+- name: restart pacemaker
+  service:
+    name: pacemaker
+    sleep: 5
+    state: restarted
+  become: true
+
+- name: Enables corosync at boot
+  copy:
+    dest: /etc/default/corosync
+    content: "START=yes"
+
+- name: Registers pacemaker service
+  service:
+    name: pacemaker
+    enabled: true
+
+- name: restart pcsd
+  systemd:
+    name: pcsd.service
+    state: restarted
+    
+- name: stop lvm2-lvmetad
+  service: 
+    name: lvm2-lvmetad
+    state: stopped
+    enabled: false

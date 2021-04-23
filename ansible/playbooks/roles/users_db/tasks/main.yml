@@ -1,0 +1,39 @@
+---
+
+#- name: Define leader node at postgres cluster
+#  uri:
+#    url: http://10.1.1.13:8500/v1/kv/service/dc1/leader
+#    method: GET
+#    return_content: true
+#  register: _result
+
+#- debug:
+#    var: '{{_result.json[0].Value | b64decode}}'  
+
+- name: Create1
+  postgresql_db:
+    login_host: web0
+    login_user: postgres
+    login_password: postgres
+    name: nextcloud
+    encoding: UTF-8
+    template: template0
+    conn_limit: "100"
+    state: present
+  register: remote_tmp
+
+
+- name: Create user nextcloud
+  postgresql_user:
+    name: nextcloud
+    password: nextcloud
+    login_user: postgres
+    login_password: postgres
+    login_host: web0
+    db: nextcloud
+    priv: "ALL"
+  register: remote_tmp
+
+#- name: Ins query to altering db
+#  shell: |
+#    psql -Upostgres -hlocalhost -c "ALTER DATABASE nextcloud OWNER TO nextcloud;"

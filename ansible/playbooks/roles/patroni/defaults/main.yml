@@ -1,0 +1,7 @@
+---
+# defaults file for roles/patroni
+patroni_scope_name: dc1
+
+pip_packages:
+  - python3-pip
+  - python-etcd
